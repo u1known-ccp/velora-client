@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "id": "velora",
+  "version": "${version}",
+  "name": "Velora Client",
+  "description": "Leicht, schnell, deins. Ein moderner PvP- und Performance-Client mit HUD-Editor, Mod-Menü und Cosmetics.",
+  "authors": ["Velora Client contributors"],
+  "contact": {},
+  "license": "MIT",
+  "icon": "assets/velora/icon.png",
+  "environment": "client",
+  "entrypoints": {
+    "client": ["dev.velora.client.VeloraClient"]
+  },
+  "mixins": ["velora.mixins.json"],
+  "depends": {
+    "fabricloader": ">=${loader_version}",
+    "minecraft": "~${minecraft_version}",
+    "java": ">=21",
+    "fabric-api": "*"
+  }
+}

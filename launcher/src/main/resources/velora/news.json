@@ -1,0 +1,22 @@
+{
+  "items": [
+    {
+      "title": "Willkommen bei Velora 0.1",
+      "date": "2026-11-22",
+      "body": "Die erste Version ist da: über 35 Mods, frei verschiebbarer HUD-Editor, Profile, Freelook, Zoom, Toggle Sprint, Performance-Optimierungen und eigene Capes. Öffne das Velora-Menü im Spiel mit der rechten Shift-Taste.",
+      "url": ""
+    },
+    {
+      "title": "Tipp: HUD-Profile",
+      "date": "2026-11-22",
+      "body": "Lege im Velora-Menü unter \"Profile\" mehrere Profile an – z.B. eins für PvP und eins für Survival. Jedes Profil speichert Mods, Einstellungen und das komplette HUD-Layout. Profile lassen sich exportieren und per Drag & Drop importieren.",
+      "url": ""
+    },
+    {
+      "title": "Performance",
+      "date": "2026-11-22",
+      "body": "FPS Optimizer begrenzt die Bildrate im Hintergrund, Entity Culling und Particle Optimizer entlasten große Kämpfe, und der Render Distance Optimizer passt die Sichtweite automatisch an deine Ziel-FPS an.",
+      "url": ""
+    }
+  ]
+}

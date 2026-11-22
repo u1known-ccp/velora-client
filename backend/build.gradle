@@ -1,0 +1,18 @@
+plugins {
+    id 'application'
+    id 'com.gradleup.shadow'
+}
+
+dependencies {
+    implementation project(':core')
+    implementation "org.slf4j:slf4j-simple:${project.slf4j_version}"
+}
+
+application {
+    mainClass = 'dev.velora.backend.BackendServer'
+}
+
+shadowJar {
+    archiveBaseName = 'velora-backend'
+    archiveClassifier = ''
+}

@@ -1,0 +1,56 @@
+plugins {
+    id 'application'
+    id 'org.openjfx.javafxplugin'
+    id 'com.gradleup.shadow'
+}
+
+evaluationDependsOn(':client-1.21.4')
+
+javafx {
+    version = '21.0.5'
+    modules = ['javafx.controls', 'javafx.graphics']
+}
+dependencies {
+    implementation project(':core')
+    // Windows DPAPI (Crypt32) for encrypting stored refresh tokens
+    implementation 'net.java.dev.jna:jna-platform:5.15.0'
+    implementation "org.slf4j:slf4j-simple:${project.slf4j_version}"
+
+    testImplementation platform('org.junit:junit-bom:5.11.3')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+application {
+    // Plain main class (not extending Application) so the shaded jar also starts from the classpath
+    mainClass = 'dev.velora.launcher.LauncherMain'
+    applicationName = 'VeloraLauncher'
+}
+
+// Bundle the freshly built client mod into the launcher so it can install it into the game instance.
+// Stored as .bin: the Shadow plugin would otherwise unpack any nested *.jar into the fat jar.
+def clientRemapJar = project(':client-1.21.4').tasks.named('remapJar')
+processResources {
+    dependsOn clientRemapJar
+    from(clientRemapJar.flatMap { it.archiveFile }) {
+        into 'velora/bundled'
+        rename { 'velora-client.bin' }
+    }
+    inputs.property 'version', project.version
+    filesMatching('velora/launcher.properties') {
+        expand 'version': project.version,
+               'minecraft_version': project.minecraft_version,
+               'loader_version': project.loader_version,
+               'fabric_version': project.fabric_version
+    }
+}
+
+shadowJar {
+    archiveBaseName = 'VeloraLauncher'
+    archiveClassifier = ''
+    mergeServiceFiles()
+}

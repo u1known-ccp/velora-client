@@ -1,0 +1,78 @@
+plugins {
+    id 'fabric-loom' version '1.10.5' apply false
+    id 'org.openjfx.javafxplugin' version '0.1.0' apply false
+    id 'com.gradleup.shadow' version '8.3.5' apply false
+}
+
+allprojects {
+    group = project.maven_group
+    version = project.velora_version
+}
+
+subprojects {
+    apply plugin: 'java'
+
+    repositories {
+        mavenCentral()
+    }
+
+    java {
+        toolchain {
+            languageVersion = JavaLanguageVersion.of(21)
+        }
+    }
+
+    tasks.withType(JavaCompile).configureEach {
+        options.encoding = 'UTF-8'
+        options.release = 21
+    }
+}
+
+// ---------------------------------------------------------------------------------------------
+// Release: collects all distributable artifacts in ./dist
+//   gradlew release          → client mod jar, launcher fat jar, backend fat jar
+//   gradlew packageLauncher  → additionally a self-contained VeloraLauncher.exe app image (jpackage)
+// ---------------------------------------------------------------------------------------------
+evaluationDependsOnChildren()
+
+tasks.register('release', Copy) {
+    group = 'velora'
+    description = 'Baut Client, Launcher und Backend und kopiert die Artefakte nach dist/'
+    from(project(':client-1.21.4').tasks.named('remapJar'))
+    from(project(':launcher').tasks.named('shadowJar'))
+    from(project(':backend').tasks.named('shadowJar'))
+    from(file('docs/INSTALL.md'))
+    into layout.projectDirectory.dir('dist')
+}
+
+tasks.register('packageLauncher', Exec) {
+    group = 'velora'
+    description = 'Erzeugt mit jpackage ein eigenständiges Launcher-Programm (inkl. Java-Runtime) in dist/app'
+    dependsOn 'release'
+    def launcherTool = project(':launcher').extensions.getByType(JavaToolchainService)
+            .launcherFor { languageVersion = JavaLanguageVersion.of(21) }
+    def input = layout.buildDirectory.dir('jpackage-input')
+    doFirst {
+        def inDir = input.get().asFile
+        delete inDir
+        inDir.mkdirs()
+        copy {
+            from project(':launcher').tasks.named('shadowJar')
+            into inDir
+            rename { 'VeloraLauncher.jar' }
+        }
+        delete file('dist/app/VeloraLauncher')
+        def jdkHome = launcherTool.get().metadata.installationPath.asFile
+        def exe = new File(jdkHome, 'bin/jpackage' + (org.gradle.internal.os.OperatingSystem.current().isWindows() ? '.exe' : ''))
+        commandLine exe.absolutePath,
+                '--type', 'app-image',
+                '--name', 'VeloraLauncher',
+                '--app-version', project.velora_version.replaceAll('[^0-9.]', ''),
+                '--vendor', 'Velora',
+                '--input', inDir.absolutePath,
+                '--main-jar', 'VeloraLauncher.jar',
+                '--main-class', 'dev.velora.launcher.LauncherMain',
+                '--java-options', '-Xmx512m',
+                '--dest', file('dist/app').absolutePath
+    }
+}
