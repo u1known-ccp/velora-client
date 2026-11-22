@@ -16,5 +16,6 @@ public record LaunchSpec(
         String assetIndex,
         Path gameDir,
         Path nativesDir,
-        int requiredJava) {
+        int requiredJava,
+        String javaComponent) {
 }

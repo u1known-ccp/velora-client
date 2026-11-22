@@ -78,7 +78,7 @@ public final class OfficialLauncherIntegration {
 
         // 2. Velora + Fabric API into Velora's own game directory
         Path gameDir = LauncherPaths.instance(profile.name);
-        installer.installMods(gameDir.resolve("mods"), () -> false);
+        installer.installMods(gameDir.resolve("mods"), profile.minecraftVersion, () -> false);
 
         // 3. launcher profile (both files if the Store launcher is used as well)
         boolean launcherInstalled = officialLauncherDetected();

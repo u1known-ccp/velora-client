@@ -13,8 +13,14 @@ public final class ClientSettings extends SettingContainer {
     /** GLFW_KEY_RIGHT_SHIFT */
     public static final int DEFAULT_MENU_KEY = 344;
 
+    /**
+     * Key codes are platform specific (GLFW up to 1.21.x, SDL3 scancodes from 26.x). The platform layer sets
+     * its Right-Shift code here before the core is created.
+     */
+    public static volatile int platformDefaultMenuKey = DEFAULT_MENU_KEY;
+
     public final ColorSetting accentColor = add(new ColorSetting("accent_color", "Akzentfarbe", "Farbe für Hervorhebungen im gesamten Client", 0xFF7C5CFF, false));
-    public final KeybindSetting menuKey = add(new KeybindSetting("menu_key", "Menü-Taste", "Öffnet das Velora-Menü", DEFAULT_MENU_KEY));
+    public final KeybindSetting menuKey = add(new KeybindSetting("menu_key", "Menü-Taste", "Öffnet das Velora-Menü", platformDefaultMenuKey));
     public final BooleanSetting animations = add(new BooleanSetting("animations", "Animationen", "Übergänge und Hover-Animationen", true));
     public final NumberSetting animationSpeed = add(new NumberSetting("animation_speed", "Animationsgeschwindigkeit", "", 1.0, 0.5, 2.0, 0.1, "x"));
     public final BooleanSetting customTitleScreen = add(new BooleanSetting("custom_title_screen", "Velora-Hauptmenü", "Eigenen Titelbildschirm verwenden", true));

@@ -1,0 +1,65 @@
+plugins {
+    id 'net.fabricmc.fabric-loom'
+}
+
+evaluationDependsOn(':core')
+
+base {
+    archivesName = "velora-client-mc${project.minecraft_version}"
+}
+
+// Minecraft 26.x requires Java 25
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(25)
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.release = 25
+    options.compilerArgs += ['-Xmaxerrs', '1000']
+}
+
+loom {
+    runs {
+        client {
+            client()
+            configName = 'Velora Client 26.3'
+            ideConfigGenerated true
+            runDir 'run'
+            vmArgs '-Xmx3G'
+        }
+        selftest {
+            client()
+            configName = 'Velora Selftest 26.3'
+            ideConfigGenerated false
+            runDir 'run'
+            vmArgs '-Xmx3G', '-Dvelora.selftest=true'
+        }
+    }
+}
+
+dependencies {
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    implementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+
+    // Core is plain Java; Gson & SLF4J are already shipped by Minecraft.
+    implementation(project(':core')) { transitive = false }
+}
+
+processResources {
+    inputs.property 'version', project.version
+    inputs.property 'minecraft_version', project.minecraft_version
+    inputs.property 'loader_version', project.loader_version
+    filesMatching('fabric.mod.json') {
+        expand 'version': project.version,
+               'minecraft_version': project.minecraft_version,
+               'loader_version': project.loader_version
+    }
+}
+
+jar {
+    from(project(':core').sourceSets.main.output)
+    from(rootProject.file('LICENSE')) { rename { "LICENSE_velora" } }
+}

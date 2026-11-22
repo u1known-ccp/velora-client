@@ -75,13 +75,19 @@ public final class LauncherSettings {
                 .orElseGet(LauncherSettings::new);
         if (s.profiles == null) s.profiles = new ArrayList<>();
         if (s.servers == null) s.servers = new ArrayList<>();
-        if (s.profiles.isEmpty()) {
-            long maxMb = Runtime.getRuntime().maxMemory() / (1024 * 1024);
-            int ram = (int) Math.max(2048, Math.min(4096, totalSystemMemoryMb() / 4));
-            s.profiles.add(new GameProfile("Velora " + build.minecraftVersion(), build.minecraftVersion(), build.loaderVersion(), ram));
-            s.selectedProfile = s.profiles.get(0).name;
-            LOGGER.debug("Created default profile (launcher heap {} MB)", maxMb);
+        // one default profile per bundled game version; a newly added (newer) version becomes the selected profile
+        int ram = (int) Math.max(2048, Math.min(4096, totalSystemMemoryMb() / 4));
+        for (BuildInfo.GameVersion g : build.versions()) {
+            boolean exists = s.profiles.stream().anyMatch(p -> g.minecraft().equals(p.minecraftVersion));
+            if (!exists) {
+                s.profiles.add(new GameProfile("Velora " + g.minecraft(), g.minecraft(), g.loader(), ram));
+                if (g == build.latest()) s.selectedProfile = "Velora " + g.minecraft();
+                LOGGER.info("Added default profile for Minecraft {}", g.minecraft());
+            }
         }
+        // keep loader versions in sync with what this launcher build ships
+        for (GameProfile p : s.profiles) build.version(p.minecraftVersion).ifPresent(g -> p.loaderVersion = g.loader());
+        s.profiles.sort(java.util.Comparator.comparingInt(p -> build.versions().indexOf(build.version(p.minecraftVersion).orElse(null))));
         if (s.servers.isEmpty()) s.servers.add(new ServerShortcut("Lokaler Server", "localhost"));
         if (s.microsoftClientId == null || s.microsoftClientId.isBlank()) s.microsoftClientId = build.defaultClientId();
         return s;

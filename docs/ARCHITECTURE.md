@@ -212,10 +212,11 @@ Legende: ✅ = in v0.1 implementiert · 🔜 = geplant (Roadmap) · ➰ = mit an
 | Komponente | Abhängigkeit | Version | Zweck |
 |---|---|---|---|
 | alle | Java | 21 (LTS) | Laufzeit & Build |
-| Build | Gradle (Wrapper) | 8.14.3 | Build-System |
-| client | Fabric Loom | 1.10.5 | Minecraft-Dev-Umgebung, Remapping |
-| client | Minecraft | 1.21.4 | Spiel |
-| client | Yarn | 1.21.4+build.8 | Mappings |
+| Build | Gradle (Wrapper) | 9.8.2 (läuft auf JDK 25) | Build-System |
+| client | Fabric Loom | 1.19.4 (`fabric-loom` für 26.3, `fabric-loom-remap` für 1.21.4) | Minecraft-Dev-Umgebung, Remapping |
+| client | Minecraft | 26.3 / 1.21.4 | Spiel |
+| client-1.21.4 | Yarn | 1.21.4+build.8 | Mappings (26.3 ist unobfuskiert – Mojang-Namen) |
+| client-26.3 | Fabric Loader / API | 0.20.1 / 0.166.2+26.3 | Java 25, SDL3-Eingabe |
 | client | Fabric Loader | 0.16.14 | Mod-Loader |
 | client | Fabric API | 0.119.4+1.21.4 | Events (HUD, Ticks, Keybinds, Chat, Rendering) |
 | core | Gson | 2.11.0 | JSON (identisch zur Minecraft-Version → kein Konflikt) |
@@ -237,7 +238,8 @@ Legende: ✅ = in v0.1 implementiert · 🔜 = geplant (Roadmap) · ➰ = mit an
 | 5 Launcher | MS OAuth, Versions-/Download-/Fabric-Installation, Logs, Profile | ✅ v0.1 |
 | 6 Testing | Builds, Start in Dev-Umgebung, Performance-Check | ✅ v0.1 |
 | 7 Release | Build-System, README, Artefakte | ✅ v0.1 |
-| 8 | `client-1.8.9` (Legacy Fabric) auf Basis von `core` | 🔜 |
+| 8 | `client-26.3` (neueste Version, Mojang-Namen, SDL3, neues GUI-Render-State-Modell) | ✅ |
+| 9 | `client-1.8.9` (Legacy Fabric) auf Basis von `core` | 🔜 |
 | 9 | Wings/Hats/Emotes (Modelle + Animationen), Cosmetic-Shop im Backend | 🔜 |
 | 10 | Motion Blur, TNT Timer, Damage Indicators, Item Physics | 🔜 |
 | 11 | Launcher: Mojang-Java-Runtime-Download, Delta-Updates | 🔜 |
@@ -261,7 +263,7 @@ Legende: ✅ = in v0.1 implementiert · 🔜 = geplant (Roadmap) · ➰ = mit an
 | Ebene | Werkzeug | Prüft |
 |---|---|---|
 | Core | JUnit 5 (`gradlew :core:test`) | Settings-Validierung, Modul-Serialisierung, Profile (anlegen/wechseln/export/import), beschädigte Configs, HUD-Anker |
-| Client | `gradlew :client-1.21.4:runSelftest` | Mixin-Audit (alle Mixins werden angewendet), alle Velora-Screens, Testwelt mit aktiven HUD-/Visual-Mods, Screenshots |
+| Client | `gradlew :client-26.3:runSelftest` (bzw. `:client-1.21.4:runSelftest`) | Mixin-Audit (alle Mixins werden angewendet), alle Velora-Screens, Testwelt mit aktiven HUD-/Visual-Mods, Screenshots |
 | Launcher | `VeloraLauncher.jar --selftest` | Komplette Installation (Mojang + Fabric + Assets + Mods), Java-Auswahl, Spielstart, Client-Selbsttest im gestarteten Spiel |
 | Launcher-UI | `VeloraLauncher.jar --ui-snapshots=<dir>` | Rendert jede Launcher-Seite als PNG |
 | Backend | HTTP-Smoke-Test | Health, News, Updates, Challenge, Berechtigungen (401/403), Statistiken |

@@ -1,7 +1,9 @@
 plugins {
-    id 'fabric-loom' version '1.10.5' apply false
+    // Loom 1.19: "fabric-loom-remap" for obfuscated versions (≤ 1.21.x, Yarn), "fabric-loom" for 26.x (Mojang names)
+    id 'net.fabricmc.fabric-loom-remap' version '1.19.4' apply false
+    id 'net.fabricmc.fabric-loom' version '1.19.4' apply false
     id 'org.openjfx.javafxplugin' version '0.1.0' apply false
-    id 'com.gradleup.shadow' version '8.3.5' apply false
+    id 'com.gradleup.shadow' version '9.6.1' apply false
 }
 
 allprojects {
@@ -39,6 +41,7 @@ tasks.register('release', Copy) {
     group = 'velora'
     description = 'Baut Client, Launcher und Backend und kopiert die Artefakte nach dist/'
     from(project(':client-1.21.4').tasks.named('remapJar'))
+    from(project(':client-26.3').tasks.named('jar'))
     from(project(':launcher').tasks.named('shadowJar'))
     from(project(':backend').tasks.named('shadowJar'))
     from(file('docs/INSTALL.md'))

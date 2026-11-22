@@ -36,7 +36,7 @@ public final class PlayView {
 
     public Node build() {
         // hero
-        Label kicker = new Label("MINECRAFT " + ctx.build.minecraftVersion() + " · FABRIC");
+        Label kicker = new Label("MINECRAFT " + String.join(" · ", ctx.build.versions().stream().map(v -> v.minecraft()).toList()) + " · FABRIC");
         kicker.getStyleClass().add("hero-kicker");
         Label title = new Label("Velora Client");
         title.getStyleClass().add("hero-title");

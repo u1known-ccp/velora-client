@@ -4,7 +4,9 @@ plugins {
     id 'com.gradleup.shadow'
 }
 
-evaluationDependsOn(':client-1.21.4')
+// All bundled game versions (newest first). Each client module provides its own minecraft/loader/fabric versions.
+def clientModules = ['client-26.3', 'client-1.21.4']
+clientModules.each { evaluationDependsOn(":$it") }
 
 javafx {
     version = '21.0.5'
@@ -31,23 +33,42 @@ application {
     applicationName = 'VeloraLauncher'
 }
 
-// Bundle the freshly built client mod into the launcher so it can install it into the game instance.
+// Bundle every client module's production jar so the launcher can install the matching one per game profile.
 // Stored as .bin: the Shadow plugin would otherwise unpack any nested *.jar into the fat jar.
-def clientRemapJar = project(':client-1.21.4').tasks.named('remapJar')
-processResources {
-    dependsOn clientRemapJar
-    from(clientRemapJar.flatMap { it.archiveFile }) {
-        into 'velora/bundled'
-        rename { 'velora-client.bin' }
-    }
-    inputs.property 'version', project.version
-    filesMatching('velora/launcher.properties') {
-        expand 'version': project.version,
-               'minecraft_version': project.minecraft_version,
-               'loader_version': project.loader_version,
-               'fabric_version': project.fabric_version
+def versionsFile = layout.buildDirectory.file('generated/velora/versions.properties')
+def versionRows = clientModules.collect { name ->
+    def p = project(":$name")
+    [p.minecraft_version, p.loader_version, p.fabric_version]
+}
+def generateVersions = tasks.register('generateVersionsProperties') {
+    inputs.property 'versions', versionRows.toString()
+    outputs.file versionsFile
+    doLast {
+        def f = versionsFile.get().asFile
+        f.parentFile.mkdirs()
+        def text = new StringBuilder("versions=" + versionRows.collect { it[0] }.join(',') + "\n")
+        versionRows.each { row -> text.append("${row[0]}.loader=${row[1]}\n${row[0]}.fabric_api=${row[2]}\n") }
+        f.text = text.toString()
     }
 }
+
+processResources {
+    clientModules.each { name ->
+        def p = project(":$name")
+        def jarTask = p.tasks.findByName('remapJar') ?: p.tasks.getByName('jar')
+        dependsOn jarTask
+        from(jarTask.archiveFile) {
+            into 'velora/bundled'
+            rename { "velora-client-${p.minecraft_version}.bin" }
+        }
+    }
+    from(generateVersions) { into 'velora' }
+    inputs.property 'version', project.version
+    filesMatching('velora/launcher.properties') {
+        expand 'version': project.version
+    }
+}
+
 
 shadowJar {
     archiveBaseName = 'VeloraLauncher'

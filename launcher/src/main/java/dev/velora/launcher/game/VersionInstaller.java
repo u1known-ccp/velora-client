@@ -143,7 +143,7 @@ public final class VersionInstaller {
         listener.status("Installiere Velora…");
         listener.progress(-1);
         Path gameDir = LauncherPaths.instance(profile.name);
-        installMods(gameDir.resolve("mods"), cancelled);
+        installMods(gameDir.resolve("mods"), mc, cancelled);
 
         Path natives = LauncherPaths.versions().resolve(mc).resolve("natives");
         Files.createDirectories(natives);
@@ -163,10 +163,12 @@ public final class VersionInstaller {
             if (a.has("jvm")) jvmArgs.addAll(a.getAsJsonArray("jvm"));
             if (a.has("game")) gameArgs.addAll(a.getAsJsonArray("game"));
         }
-        int java = vanilla.has("javaVersion") ? vanilla.getAsJsonObject("javaVersion").get("majorVersion").getAsInt() : 21;
+        JsonObject javaVersion = vanilla.has("javaVersion") ? vanilla.getAsJsonObject("javaVersion") : new JsonObject();
+        int java = javaVersion.has("majorVersion") ? javaVersion.get("majorVersion").getAsInt() : 21;
+        String javaComponent = javaVersion.has("component") ? javaVersion.get("component").getAsString() : "java-runtime-delta";
         listener.status("Bereit");
         listener.progress(1);
-        return new LaunchSpec(fabricId, fabric.get("mainClass").getAsString(), cp, jvmArgs, gameArgs, loggingArg, indexId, gameDir, natives, java);
+        return new LaunchSpec(fabricId, fabric.get("mainClass").getAsString(), cp, jvmArgs, gameArgs, loggingArg, indexId, gameDir, natives, java, javaComponent);
     }
 
     private JsonObject loadVanillaJson(String mc, Path target) throws IOException {
@@ -205,10 +207,12 @@ public final class VersionInstaller {
     }
 
     /** Copies the bundled (or a newer, downloaded and verified) Velora jar and downloads Fabric API. */
-    public void installMods(Path modsDir, BooleanSupplier cancelled) throws IOException {
+    public void installMods(Path modsDir, String minecraftVersion, BooleanSupplier cancelled) throws IOException {
+        BuildInfo.GameVersion game = build.version(minecraftVersion)
+                .orElseThrow(() -> new IOException("Minecraft " + minecraftVersion + " wird von diesem Launcher nicht unterstützt"));
         Files.createDirectories(modsDir);
         // remove stale managed jars of other versions
-        String fabricApiName = "fabric-api-" + build.fabricApiVersion() + ".jar";
+        String fabricApiName = "fabric-api-" + game.fabricApi() + ".jar";
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(modsDir, "*.jar")) {
             for (Path p : stream) {
                 String n = p.getFileName().toString();
@@ -217,33 +221,33 @@ public final class VersionInstaller {
         }
 
         Path veloraTarget = modsDir.resolve("velora-client.jar");
-        Path updated = newestDownloadedClientUpdate();
+        Path updated = newestDownloadedClientUpdate(minecraftVersion);
         if (updated != null) {
             Files.copy(updated, veloraTarget, StandardCopyOption.REPLACE_EXISTING);
         } else {
-            try (InputStream in = VersionInstaller.class.getResourceAsStream("/velora/bundled/velora-client.bin")) {
-                if (in == null) throw new IOException("Velora-Client-Jar fehlt im Launcher (Build unvollständig)");
+            try (InputStream in = VersionInstaller.class.getResourceAsStream(game.bundledResource())) {
+                if (in == null) throw new IOException("Velora-Client für " + minecraftVersion + " fehlt im Launcher (Build unvollständig)");
                 Path tmp = modsDir.resolve("velora-client.jar.tmp");
                 Files.copy(in, tmp, StandardCopyOption.REPLACE_EXISTING);
                 Files.move(tmp, veloraTarget, StandardCopyOption.REPLACE_EXISTING);
             }
         }
 
-        String v = build.fabricApiVersion();
+        String v = game.fabricApi();
         String url = FABRIC_MAVEN + "net/fabricmc/fabric-api/fabric-api/" + v + "/fabric-api-" + v + ".jar";
         String sha1 = Http.getString(url + ".sha1").trim();
         downloader.downloadAll(List.of(new Downloader.Task(url, modsDir.resolve(fabricApiName), sha1, -1)), (a, b, c, d) -> { }, cancelled);
     }
 
     /** A client update downloaded by the UpdateService (verified by SHA-256 before it was stored). */
-    private Path newestDownloadedClientUpdate() throws IOException {
+    private Path newestDownloadedClientUpdate(String minecraftVersion) throws IOException {
         Path dir = LauncherPaths.updates();
         if (!Files.isDirectory(dir)) return null;
         Path best = null;
         String bestVersion = build.version();
-        try (DirectoryStream<Path> stream = Files.newDirectoryStream(dir, "velora-client-*.jar")) {
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(dir, "velora-client-" + minecraftVersion + "-*.jar")) {
             for (Path p : stream) {
-                String v = p.getFileName().toString().replace("velora-client-", "").replace(".jar", "");
+                String v = p.getFileName().toString().replace("velora-client-" + minecraftVersion + "-", "").replace(".jar", "");
                 if (UpdateInfo.compareVersions(v, bestVersion) > 0) {
                     best = p;
                     bestVersion = v;

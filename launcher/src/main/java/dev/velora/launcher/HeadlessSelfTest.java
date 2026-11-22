@@ -20,9 +20,12 @@ final class HeadlessSelfTest {
     static int run() throws Exception {
         LauncherPaths.ensure();
         LauncherContext ctx = new LauncherContext();
-        LauncherSettings.GameProfile base = ctx.settings.selectedProfile();
+        String wanted = System.getProperty("velora.selftest.version", "");
+        LauncherSettings.GameProfile base = wanted.isEmpty() ? ctx.settings.selectedProfile()
+                : ctx.settings.profiles.stream().filter(p -> p.minecraftVersion.equals(wanted)).findFirst()
+                        .orElseThrow(() -> new IllegalStateException("Kein Profil für Minecraft " + wanted));
         LauncherSettings.GameProfile profile = new LauncherSettings.GameProfile(base.name, base.minecraftVersion, base.loaderVersion, base.ramMb);
-        profile.jvmArgs = "-Dvelora.selftest=true";
+        profile.jvmArgs = ("-Dvelora.selftest=true " + System.getProperty("velora.selftest.jvmArgs", "")).trim();
         System.out.println("[Launcher-SelfTest] Profil: " + profile.name + " (Minecraft " + profile.minecraftVersion + ", Loader " + profile.loaderVersion + ")");
         long start = System.currentTimeMillis();
         int[] lastPct = {-1};

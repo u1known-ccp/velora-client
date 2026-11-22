@@ -13,8 +13,11 @@ rootProject.name = 'velora'
 
 // Shared, Minecraft-independent core (mod system, settings, config, profiles, backend client)
 include 'core'
-// Fabric client for Minecraft 1.21.4 (modern line)
+// Fabric client for Minecraft 1.21.4 (obfuscated, Yarn mappings)
 include 'client-1.21.4'
+// Fabric client for Minecraft 26.3 (newest, unobfuscated, Mojang names, Java 25)
+// WORK IN PROGRESS – port not finished yet (see docs/PORT_26.3.md); re-enable when it compiles.
+include 'client-26.3'
 // Standalone JavaFX launcher
 include 'launcher'
 // Optional backend service (news, updates, cosmetics, config sync)

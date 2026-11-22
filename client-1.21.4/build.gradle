@@ -1,5 +1,5 @@
 plugins {
-    id 'fabric-loom'
+    id 'net.fabricmc.fabric-loom-remap'
 }
 
 evaluationDependsOn(':core')
@@ -9,9 +9,7 @@ base {
 }
 
 loom {
-    mixin {
-        defaultRefmapName = 'velora.refmap.json'
-    }
+    // Loom 1.19 remaps mixins with tiny-remapper (no annotation processor / refmap needed)
     runs {
         client {
             client()

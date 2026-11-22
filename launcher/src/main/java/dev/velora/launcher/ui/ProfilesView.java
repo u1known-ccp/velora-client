@@ -85,12 +85,23 @@ public final class ProfilesView {
             width.valueProperty().addListener((o, a, b) -> { p.width = b; ctx.settings.save(); });
             height.valueProperty().addListener((o, a, b) -> { p.height = b; ctx.settings.save(); });
 
+            javafx.scene.control.ComboBox<String> version = new javafx.scene.control.ComboBox<>();
+            for (var g : ctx.build.versions()) version.getItems().add(g.minecraft());
+            version.setValue(p.minecraftVersion);
+            version.setOnAction(e -> ctx.build.version(version.getValue()).ifPresent(g -> {
+                p.minecraftVersion = g.minecraft();
+                p.loaderVersion = g.loader();
+                ctx.settings.save();
+                render(list);
+            }));
+
             GridPane grid = new GridPane();
             grid.setHgap(12);
             grid.setVgap(8);
-            grid.addRow(0, Ui.hint("Arbeitsspeicher"), Ui.row(ram, ramLabel));
-            grid.addRow(1, Ui.hint("JVM-Argumente"), jvm);
-            grid.addRow(2, Ui.hint("Fenstergröße"), Ui.row(width, new Label("×"), height));
+            grid.addRow(0, Ui.hint("Minecraft-Version"), version);
+            grid.addRow(1, Ui.hint("Arbeitsspeicher"), Ui.row(ram, ramLabel));
+            grid.addRow(2, Ui.hint("JVM-Argumente"), jvm);
+            grid.addRow(3, Ui.hint("Fenstergröße"), Ui.row(width, new Label("×"), height));
 
             Button folder = Ui.secondary("Ordner öffnen", () -> app.openPath(LauncherPaths.instance(p.name)));
             Button select = Ui.secondary(p.name.equals(ctx.settings.selectedProfile) ? "Ausgewählt" : "Auswählen", () -> {

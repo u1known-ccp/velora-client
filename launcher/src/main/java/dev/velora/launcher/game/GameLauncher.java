@@ -33,7 +33,7 @@ public final class GameLauncher {
         StringBuilder cp = new StringBuilder();
         for (Path p : spec.classpath()) {
             if (!cp.isEmpty()) cp.append(sep);
-            cp.append(p.toAbsolutePath());
+            cp.append(realPath(p));
         }
 
         Map<String, String> vars = new HashMap<>();
@@ -87,6 +87,19 @@ public final class GameLauncher {
         Process process = pb.start();
         pump(process.getInputStream(), log);
         return process;
+    }
+
+    /**
+     * Fabric Loader ≥ 0.20 identifies its own libraries by their real (canonical) path. If the classpath used a
+     * different spelling of the same file (symlinks, redirected/virtualised AppData folders), Mixin would be loaded
+     * twice and the game crashes – so we always pass the real path.
+     */
+    private static String realPath(Path p) {
+        try {
+            return p.toRealPath().toString();
+        } catch (IOException e) {
+            return p.toAbsolutePath().toString();
+        }
     }
 
     private static void appendArgs(List<String> cmd, JsonArray args, Map<String, String> vars, Map<String, Boolean> features) {

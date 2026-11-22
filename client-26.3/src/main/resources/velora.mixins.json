@@ -1,0 +1,27 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "dev.velora.client.mixin",
+  "compatibilityLevel": "JAVA_25",
+  "client": [
+    "AbstractClientPlayerEntityMixin",
+    "CameraMixin",
+    "ChatHudMixin",
+    "ClientWorldMixin",
+    "EntityRenderDispatcherMixin",
+    "InactivityFpsLimiterMixin",
+    "InGameHudMixin",
+    "KeyBindingMixin",
+    "KeyboardMixin",
+    "LightmapTextureManagerMixin",
+    "LivingEntityRendererMixin",
+    "MinecraftClientMixin",
+    "MouseMixin",
+    "OverlayTextureAccessor",
+    "ParticleManagerMixin",
+    "WorldMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

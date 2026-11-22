@@ -67,7 +67,7 @@ public final class LaunchController {
                 JavaManager.JavaInstall java = ctx.java.best(spec.requiredJava(), ctx.settings.javaPath).orElse(null);
                 if (java == null) {
                     fx(() -> status.set("Lade Java " + spec.requiredJava() + " (Mojang-Runtime)…"));
-                    java = ctx.java.installMojangRuntime(runtimeComponent(spec.requiredJava()), p -> fx(() -> progress.set(p)), cancel::get);
+                    java = ctx.java.installMojangRuntime(spec.javaComponent(), p -> fx(() -> progress.set(p)), cancel::get);
                 }
                 final JavaManager.JavaInstall javaFinal = java;
                 fx(() -> {
@@ -104,15 +104,6 @@ public final class LaunchController {
         });
     }
 
-    private static String runtimeComponent(int major) {
-        return switch (major) {
-            case 8 -> "jre-legacy";
-            case 16 -> "java-runtime-alpha";
-            case 17 -> "java-runtime-gamma";
-            default -> "java-runtime-delta"; // Java 21
-        };
-    }
-
     private Account ensureLoggedIn(Account account) throws MicrosoftAuth.AuthException {
         if (account.type == Account.Type.OFFLINE) {
             if (!LauncherContext.devMode()) throw new MicrosoftAuth.AuthException("Offline-Konten sind nur im Entwicklermodus erlaubt. Bitte mit Microsoft anmelden.");
@@ -143,9 +134,11 @@ public final class LaunchController {
         if (!ctx.settings.autoUpdate || !ctx.settings.backendEnabled) return;
         ctx.background.submit(() -> {
             UpdateService updates = new UpdateService(ctx.backend());
-            String mc = ctx.build.minecraftVersion();
-            updates.check("client-" + mc, ctx.build.version(), "velora-client-").ifPresent(r ->
-                    fx(() -> updateNotice.set("Client-Update " + r.version() + " geladen – wird beim nächsten Start verwendet.")));
+            for (var game : ctx.build.versions()) {
+                String mc = game.minecraft();
+                updates.check("client-" + mc, ctx.build.version(), "velora-client-" + mc + "-").ifPresent(r ->
+                        fx(() -> updateNotice.set("Client-Update " + r.version() + " (Minecraft " + mc + ") geladen – wird beim nächsten Start verwendet.")));
+            }
             updates.check("launcher", ctx.build.version(), "VeloraLauncher-").ifPresent(r ->
                     fx(() -> updateNotice.set("Launcher-Update " + r.version() + " bereit: " + r.file().getFileName()
                             + " (Ordner " + LauncherPaths.updates() + ")")));

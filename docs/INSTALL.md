@@ -5,9 +5,8 @@
 1. **Java 21** installieren (z.B. Eclipse Temurin oder Oracle JDK 21) – nur für die `.jar`-Variante nötig.
    Die `VeloraLauncher.exe` aus `dist/app/VeloraLauncher/` bringt ihre eigene Java-Runtime mit.
 2. `VeloraLauncher.exe` (bzw. `java -jar VeloraLauncher-0.1.0.jar`) starten.
-3. **Konten** → *Microsoft-Konto hinzufügen* (siehe [MICROSOFT_LOGIN.md](MICROSOFT_LOGIN.md)) oder für Tests
-   *Offline-Konto hinzufügen*.
-4. **Spielen** klicken. Beim ersten Start lädt der Launcher Minecraft 1.21.4, Fabric Loader, Fabric API und die
+3. **Konten** → *Microsoft-Konto hinzufügen* (siehe [MICROSOFT_LOGIN.md](MICROSOFT_LOGIN.md)).
+4. **Spielen** klicken. Unter **Profile** wählst du die Minecraft-Version (26.3 oder 1.21.4). Beim ersten Start lädt der Launcher Minecraft, Fabric Loader, Fabric API und die
    Spiel-Assets von den offiziellen Servern (Mojang / FabricMC) – danach startet das Spiel mit Velora.
 
 Daten liegen in `%APPDATA%\.velora\`:
@@ -37,8 +36,8 @@ Technisch ist das derselbe Weg wie der offizielle Fabric-Installer: eine Fabric-
 
 ## Variante B: Als Fabric-Mod in einem anderen Launcher
 
-1. Fabric Loader ≥ 0.16.14 für Minecraft **1.21.4** installieren.
-2. `velora-client-mc1.21.4-0.1.0.jar` und **Fabric API** (0.119.4+1.21.4) in den `mods`-Ordner legen.
+1. Fabric Loader installieren: ≥ 0.20.1 für **26.3** (Java 25) bzw. ≥ 0.16.14 für **1.21.4**.
+2. Die passende `velora-client-mc<Version>-0.1.0.jar` und **Fabric API** (0.166.2+26.3 bzw. 0.119.4+1.21.4) in den `mods`-Ordner legen.
 
 ## Im Spiel
 
